@@ -1,25 +1,19 @@
 #!/bin/bash
-delete_chargetask () {
-    echo "Checking any butler with same Taskkey"
+clear_task_butler_ready () {
+    echo "Clearing Task from Butler_ID : $1 and making it ready"
     echo "<br>"
-    echo "<br>"
-    echo '<pre>'
-    sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript butlerinfo search_by "[[{'taskkey', 'equal', <<\"$1\">>}], 'record']."
-    echo '</pre>'
-    bot_ip=`sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript butlerinfo search_by "[[{'taskkey', 'equal', <<\"$1\">>}], 'record']." | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}'`
-    echo "<br>"
-    echo "Butler Ip: $bot_ip"
-    echo "<br>"
+    bot_ip=`sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript butlerinfo get_by_id "[$1]." | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}'`
+    echo $bot_ip
     if [ ! -n "$bot_ip" ]
     then
-        echo "Butler is Not Present....Deleting a charge task"
-        curl -X POST -H 'Content-Type: application/json' -d '{"table_name":"chargetask","key" : "'"$1"'"}' localhost:8181/api/mhs/task/delete
-        echo "<br>"
-        echo "Ok....Done"
-        
+        echo "Wrong Butler ID"
     else
-        echo "Butler Found Aborting Charge task deletion"
-        echo "<br>"
+        ping -c1 -W 1 $bot_ip  > /dev/null
+        if [ $? -eq 0 ];then
+            sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript butlerinfo update_columns_by_id "[$1,[{'taskkey','null'},{'tasktype','null'},{'status','ready'}]]."
+        else
+           echo "Butler is not ON.....turn on Butler FIRST"
+        fi 
     fi
 }
 echo "Content-type: text/html" 
@@ -28,7 +22,7 @@ echo ""
 echo '<html>' 
 echo '<head>' 
 echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">' 
-echo '<title>Delete chargetask</title>' 
+echo '<title>Clear Task from Butler and make it ready</title>' 
 echo '<link rel="stylesheet" href="nextPage.css" type="text/css">' 
 echo '</head>' 
 echo '<body>' 
@@ -40,8 +34,8 @@ echo '<div class="content">'
 echo "<form method=GET action=\"${SCRIPT}\">" 
 echo '<div class="user-details">' 
 echo '<div class="input-box">' 
-echo '<span class="details">Enter Charger TaskKey</span>' 
-echo '<input type="text" name="chargeTask_Key" style="padding-right:6px" size=12 placeholder="chargeTask_Key" required>' 
+echo '<span class="details">Enter Butler_ID</span>' 
+echo '<input type="number" name="Butler_ID" style="padding-right:6px" size=12 placeholder="Enter Butler_ID" required>' 
 echo '</div>' 
 echo '<div class="button" style="width:100%;">' 
 echo '<input type="submit" value="SUBMIT"style="text-align:center; height:70%;">' 
@@ -53,6 +47,7 @@ echo '</form>'
 echo '</div>' 
 echo '</div>' 
 echo '<div class="container" style="position:absolute; font-size:13px;  width:91.3%;">'
+
   # Make sure we have been invoked properly.
 
   if [ "$REQUEST_METHOD" != "GET" ]; then
@@ -69,12 +64,11 @@ echo '<div class="container" style="position:absolute; font-size:13px;  width:91
         exit 0
   else
    # No looping this time, just extract the data you are looking for with sed:
-     XX=`echo "$QUERY_STRING" | sed -n 's/^.*Task_Key=\([^&]*\).*$/\1/p' | sed "s/%20/ /g"`
-	 
-	   echo "chargeTask_Key: <<"$XX">>"
+	 XX=`echo "$QUERY_STRING" | sed -r 's/([^0-9]*([0-9]*)){1}.*/\2/'`
+	
+     echo "Butler_ID: " $XX
      echo '<br>'
-     delete_chargetask $XX
-     
+	   clear_task_butler_ready $XX 
   fi
 echo '</div>'
 echo '</body>'

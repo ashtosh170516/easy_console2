@@ -1,26 +1,18 @@
 #!/bin/bash
-delete_chargetask () {
-    echo "Checking any butler with same Taskkey"
+audit_task_pending_system () {
+    echo "All Audit Task pending in the System"
     echo "<br>"
-    echo "<br>"
-    echo '<pre>'
-    sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript butlerinfo search_by "[[{'taskkey', 'equal', <<\"$1\">>}], 'record']."
-    echo '</pre>'
-    bot_ip=`sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript butlerinfo search_by "[[{'taskkey', 'equal', <<\"$1\">>}], 'record']." | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}'`
-    echo "<br>"
-    echo "Butler Ip: $bot_ip"
-    echo "<br>"
-    if [ ! -n "$bot_ip" ]
-    then
-        echo "Butler is Not Present....Deleting a charge task"
-        curl -X POST -H 'Content-Type: application/json' -d '{"table_name":"chargetask","key" : "'"$1"'"}' localhost:8181/api/mhs/task/delete
-        echo "<br>"
-        echo "Ok....Done"
-        
-    else
-        echo "Butler Found Aborting Charge task deletion"
-        echo "<br>"
-    fi
+    if [ "$1" -eq "1" ]; then
+      echo '<pre>'
+       sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript audittaskrec search_by "[[{'status', 'notequal', 'complete'}], 'key']."
+       echo '</pre>'
+    elif [ "$1" -eq "2" ]; then
+      echo '<pre>'
+       sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript audittaskrec search_by "[[{'status', 'notequal', 'complete'}], 'record']."
+       echo '</pre>'
+    else 
+        echo "Wrong Key pressed"
+    fi  
 }
 echo "Content-type: text/html" 
 echo "" 
@@ -28,7 +20,7 @@ echo ""
 echo '<html>' 
 echo '<head>' 
 echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">' 
-echo '<title>Delete chargetask</title>' 
+echo '<title>All audit task pending in the system</title>' 
 echo '<link rel="stylesheet" href="nextPage.css" type="text/css">' 
 echo '</head>' 
 echo '<body>' 
@@ -40,8 +32,8 @@ echo '<div class="content">'
 echo "<form method=GET action=\"${SCRIPT}\">" 
 echo '<div class="user-details">' 
 echo '<div class="input-box">' 
-echo '<span class="details">Enter Charger TaskKey</span>' 
-echo '<input type="text" name="chargeTask_Key" style="padding-right:6px" size=12 placeholder="chargeTask_Key" required>' 
+echo '<span class="details">Type 1 for key and 2 for record</span>' 
+echo '<input type="number" name="Type 1 for key and 2 for record" style="padding-right:6px" size=12 placeholder="1 or 2" required>' 
 echo '</div>' 
 echo '<div class="button" style="width:100%;">' 
 echo '<input type="submit" value="SUBMIT"style="text-align:center; height:70%;">' 
@@ -69,12 +61,11 @@ echo '<div class="container" style="position:absolute; font-size:13px;  width:91
         exit 0
   else
    # No looping this time, just extract the data you are looking for with sed:
-     XX=`echo "$QUERY_STRING" | sed -n 's/^.*Task_Key=\([^&]*\).*$/\1/p' | sed "s/%20/ /g"`
-	 
-	   echo "chargeTask_Key: <<"$XX">>"
+     XX=`echo "$QUERY_STRING" | sed -n 's/^.*record=\([^ ]*\).*$/\1/p'`
+	
+	   echo "Type 1 for key and 2 for record: " $XX
      echo '<br>'
-     delete_chargetask $XX
-     
+     audit_task_pending_system $XX   
   fi
 echo '</div>'
 echo '</body>'

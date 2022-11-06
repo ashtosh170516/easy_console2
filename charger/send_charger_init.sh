@@ -27,7 +27,7 @@ echo '<span class="details">Enter Charger_ID</span>'
 echo '<input type="text" name="Charger_ID" style="padding-right:6px" size=12 placeholder="Charger_ID" required>' 
 echo '</div>' 
 echo '<div class="button" style="width:100%;">' 
-echo '<input type="submit" value="SUBMIT"style="text-align:center; height:70%;">' 
+echo '<input type="submit" value="SUBMIT"style="text-align:center; height:70%;">' s
 echo '<br>' 
 echo '<br>' 
 echo '<input type="refresh" value="REFRESH" onClick="history.back()" style="text-align:center; height:70%;">' 
