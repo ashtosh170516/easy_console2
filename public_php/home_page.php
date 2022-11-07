@@ -61,7 +61,7 @@ top:auto;
                 
                 <ul class="mega-links">
                  <li><a href="/cgi-bin/butler/get_butler.sh">* Get Butler Info</a></li>
-                  <li><a href="/cgi-bin/butler/Pause_butler.sh">* Pause a Butler</a></li>
+                  <li><a href="/cgi-bin/butler/pause_butler.sh">* Pause a Butler</a></li>
                   <li><a href="/cgi-bin/butler/UnPause_butler.sh">* UnPause a Butler</a></li>
                   <li><a href="/cgi-bin/butler/Purge_butler.sh">* Purge a Butler</a></li>
                 </ul>

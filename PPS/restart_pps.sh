@@ -1,27 +1,16 @@
 #!/bin/bash
-move_task_pending_system () {
-    echo "All movetaskrec pending in the system"
+pps_restart () {
+    echo "restarting PPS for PPS_ID : $1"
     echo "<br>"
-    if [ "$1" -eq "1" ]; then
-       echo '<pre>'
-       sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript movetaskrec search_by "[[{'status', 'notequal', 'complete'}], 'key']."
-       echo '</pre>'
-    elif [ "$1" -eq "2" ]; then
-      echo '<pre>'
-       sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript movetaskrec search_by "[[{'status', 'notequal', 'complete'}], 'record']."
-       echo '</pre>'
-    else 
-        echo "Wrong Key pressed"
-    fi
+    sudo /opt/butler_server/erts-11.1.1/bin/escript /usr/lib/cgi-bin/rpc_call.escript station_recovery restart_pps "[$1]."
 }
 echo "Content-type: text/html" 
 echo "" 
-
 echo '<html>' 
 echo '<head>' 
 echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">' 
-echo '<title>All move task pending in the system</title>' 
-echo '<link rel="stylesheet" href="nextPage.css" type="text/css">' 
+echo '<title>restarting PPS</title>' 
+echo '<link rel="stylesheet" href="npl.css" type="text/css">' 
 echo '</head>' 
 echo '<body>' 
 echo '<div class=container>' 
@@ -32,8 +21,8 @@ echo '<div class="content">'
 echo "<form method=GET action=\"${SCRIPT}\">" 
 echo '<div class="user-details">' 
 echo '<div class="input-box">' 
-echo '<span class="details">Type 1 for key and 2 for record</span>' 
-echo '<input type="number" name="Type 1 for key and 2 for record" style="padding-right:6px" size=12 placeholder="Enter 1 or 2" required>' 
+echo '<span class="details">Enter PPS_ID</span>' 
+echo '<input type="number" name="PPS_ID" style="padding-right:6px" size=12 placeholder="PPS_ID" required>' 
 echo '</div>' 
 echo '<div class="button" style="width:100%;">' 
 echo '<input type="submit" value="SUBMIT"style="text-align:center; height:70%;">' 
@@ -45,6 +34,7 @@ echo '</form>'
 echo '</div>' 
 echo '</div>' 
 echo '<div class="container" style="position:absolute; font-size:13px;  width:91.3%;">'
+
   # Make sure we have been invoked properly.
 
   if [ "$REQUEST_METHOD" != "GET" ]; then
@@ -60,13 +50,15 @@ echo '<div class="container" style="position:absolute; font-size:13px;  width:91
   if [ -z "$QUERY_STRING" ]; then
         exit 0
   else
+     echo '<hr>'
+     echo '<h3 align="center">RESPONSE</h3>'
+     echo '<hr>'
    # No looping this time, just extract the data you are looking for with sed:
-	 XX=`echo "$QUERY_STRING" | sed -n 's/^.*record=\([^ ]*\).*$/\1/p'`
+     XX=`echo "$QUERY_STRING" | sed -r 's/([^0-9]*([0-9]*)){1}.*/\2/'`
 	
-     
-	 echo "Type 1 for key and 2 for record: " $XX
-   echo '<br>'
-   move_task_pending_system $XX   
+     echo "PPS_ID: " $XX
+     echo '<br>'
+     pps_restart $XX
   fi
 echo '</div>'
 echo '</body>'

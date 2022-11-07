@@ -1,0 +1,8 @@
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [NC,L]
+RewriteRule ^home?$ home_page.php
+RewriteRule ^7261636b696e666f?$ /cgi-bin/MSU/rackinfo.sh
+RewriteRule ^7261636b6367?$ /cgi-bin/MSU/check_rack_CG.sh
+RewriteRule ^7570646174657261636b?$ /cgi-bin/MSU/update_rack.sh
